@@ -31,7 +31,7 @@ VIDEO_PATH = "relics.mp4"
 OUTPUT_CSV = "relics.csv"
 DEBUG_DIR = "debug_frames"
 DEBUG = False
-FRAME_SKIP = 4
+FRAME_SKIP = 3
 SHOW_PREVIEW = False
 
 reader = easyocr.Reader(['en'], gpu=True)
