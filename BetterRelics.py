@@ -11,6 +11,8 @@ import easyocr
 import re
 from tqdm import tqdm
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 # === Constants ===
 COLOR_MAP = {
     "Burning": "Red",
@@ -33,6 +35,9 @@ DEBUG_DIR = "debug_frames"
 DEBUG = False
 FRAME_SKIP = 3
 SHOW_PREVIEW = False
+
+print("Current working directory:", os.getcwd())
+print("Looking for video at:", os.path.abspath(VIDEO_PATH))
 
 reader = easyocr.Reader(['en'], gpu=True)
 
@@ -105,7 +110,15 @@ def hash_relic(name, slot1, slot2, slot3):
 
 def update_relics_csv():
     cap = cv2.VideoCapture(VIDEO_PATH)
+    if not cap.isOpened():
+        print(f"❌ Could not open video: {VIDEO_PATH}")
+        return False  # Indicate failure
+    
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    if total_frames == 0:
+        print(f"❌ Video has 0 frames. Is it corrupted or empty?")
+        return False
+    
     print(f"\n🎥 Processing video ({total_frames} frames)...")
     if DEBUG and not os.path.exists(DEBUG_DIR):
         os.makedirs(DEBUG_DIR)
@@ -140,6 +153,7 @@ def update_relics_csv():
     cap.release()
     pd.DataFrame(relics).to_csv(OUTPUT_CSV, index=False)
     print(f"\n✅ Done! {len(relics)} unique relics saved to '{OUTPUT_CSV}'")
+    return True  # Indicate success
 
 def detect_delimiter(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
@@ -152,6 +166,8 @@ def load_relics_by_color(file_path):
     with open(file_path, newline='', encoding='utf-8') as f:
         reader = csv.reader(f, delimiter=delimiter)
         for row in reader:
+            if not row or len(row) < 2:
+                continue  # Skip empty or malformed rows
             name = row[0].strip()
             parts = name.split()
             if len(parts) >= 2:
@@ -334,6 +350,14 @@ class RelicSelector(tk.Tk):
                 self.slot_labels[row][col].config(text=text)
 
 if __name__ == "__main__":
+    if not update_relics_csv():
+        print("Exiting due to video processing error.")
+        exit(1)
+
+    if not os.path.exists(OUTPUT_CSV):
+        print(f"❌ Missing expected output file: {OUTPUT_CSV}")
+        exit(1)
+        
     relics = load_relics_by_color("relics.csv")
     app = RelicSelector(relics)
     app.mainloop()
