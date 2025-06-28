@@ -32,13 +32,15 @@ COLOR_MAP = {
     "Burning": "Red",
     "Luminous": "Yellow",
     "Drizzly": "Blue",
-    "Tranquil": "Green"
+    "Tranquil": "Green",
+    "Any": "White"
 }
 COLOR_HEX = {
     "Red": "#ff998b",
     "Yellow": "#d1ce2c",
     "Blue": "#62aff8",
-    "Green": "#3eff3e"
+    "Green": "#3eff3e",
+    "White": "eeeeee"
 }
 
 # === Config. ===
@@ -195,7 +197,7 @@ def load_relics_by_color(file_path):
                 if color:
                     slot_items = [cell.strip() for cell in row[1:4] if cell.strip()]
                     for slot in slot_items:
-                        relics_by_color[color].append((slot, slot_items))
+                        relics_by_color[color].append((slot, (name, slot_items)))
     return relics_by_color
 
 class RelicSelector(tk.Tk):
@@ -222,7 +224,8 @@ class RelicSelector(tk.Tk):
         self.result_boxes = []
         self.search_entries = []
         self.color_menus = []
-        self.slot_labels = [[None]*3 for _ in range(3)]
+        self.name_labels = [None, None, None] # Selected Relic Name
+        self.slot_labels = [[None]*3 for _ in range(3)] # Selected Relic Attr
         self.style = ttk.Style()
 
         self.build_ui()
@@ -256,6 +259,7 @@ class RelicSelector(tk.Tk):
             col_frame.grid_rowconfigure(1, weight=0)
             col_frame.grid_rowconfigure(2, weight=0)
             col_frame.grid_rowconfigure(3, weight=1)  # Only listbox grows
+            col_frame.grid_rowconfigure(4, weight=0)  # name label row
             col_frame.grid_columnconfigure(0, weight=1)
             
             # Label
@@ -286,23 +290,32 @@ class RelicSelector(tk.Tk):
             result_box.bind("<d>", lambda e, idx=i: self.cycle_relic(idx, forward=True))
             result_box.bind("<a>", lambda e, idx=i: self.cycle_relic(idx, forward=False))
             self.result_boxes.append(result_box)
-                    
-        # Grid display of selected relics
-        grid_frame = tk.Frame(self, width=930)
-        grid_frame.grid(row=1, column=0, pady=10)
+
+        # Shared container for name labels and the 3x3 grid
+        grid_container = tk.Frame(self, width=930)
+        grid_container.grid(row=1, column=0, pady=10)
         for col in range(3):
-            grid_frame.grid_columnconfigure(col, minsize=300, weight=1)
+            grid_container.grid_columnconfigure(col, minsize=300, weight=1)
+
+        # Name labels (row 0)
+        for col in range(3):
+            name_label = tk.Label(grid_container, text="—", font=("Comic Sans", 15, "bold"), anchor="center")
+            name_label.grid(row=0, column=col, padx=WIDGET_PADX, sticky="ew")
+            self.name_labels[col] = name_label
+
+        # Relic attribute grid (rows 1–3)
         for row in range(3):
             for col in range(3):
-                label = tk.Label(grid_frame, text="—", relief="groove", anchor="w", justify="left",
-                                 padx=6, font=("Comic Sans", 10), height=2, wraplength=275)
-                label.grid(row=row, column=col, padx=WIDGET_PADX, pady=4, sticky="ew")
+                label = tk.Label(grid_container, text="—", relief="groove", anchor="w", justify="left",
+                                padx=6, font=("Comic Sans", 10), height=2, wraplength=275)
+                label.grid(row=row + 1, column=col, padx=WIDGET_PADX, pady=4, sticky="ew")
                 self.slot_labels[row][col] = label
+
 
         # Update button at the bottom
         update_button = tk.Button(self, text="Update Relics", command=self.on_update_click,
                                   font=("Comic Sans", 10, "bold"), bg="#dddddd")
-        update_button.grid(row=2, column=0, pady=10)
+        update_button.grid(row=3, column=0, pady=10)
 
     def on_update_click(self):
         success = update_relics_csv()
@@ -316,13 +329,20 @@ class RelicSelector(tk.Tk):
 
     def update_relic_list(self, index):
         color = self.color_vars[index].get()
-        all_entries = self.relics_by_color.get(color, [])
-        used_groups = [set(r) for i, r in enumerate(self.selected_relics) if i != index and r]
+        if color == "White":
+            # Collect all relics from all color buckets
+            all_entries = []
+            for bucket in self.relics_by_color.values():
+                all_entries.extend(bucket)
+        else:
+            all_entries = self.relics_by_color.get(color, [])
+        # print("Selected relics:", self.selected_relics)
+        used_groups = [frozenset(r[1]) for i, r in enumerate(self.selected_relics) if i != index and r]
         slot_to_groups = defaultdict(list)
-        for slot, full_group in all_entries:
+        for slot, (relic_name, full_group) in all_entries:
             if any(set(full_group) == used for used in used_groups):
                 continue
-            slot_to_groups[slot].append(full_group)
+            slot_to_groups[slot].append((relic_name, full_group))
 
         self.relic_lookup[index] = {}
         self.relic_cycle_index[index] = {}
@@ -364,7 +384,7 @@ class RelicSelector(tk.Tk):
             relic_list = self.relic_lookup[index].get(label, [])
             idx = self.relic_cycle_index[index].get(label, 0)
             if relic_list:
-                self.selected_relics[index] = relic_list[idx]
+                self.selected_relics[index] = (relic_list[idx][0], relic_list[idx][1]) # idx0 = name, idx1 = attributes
                 self.refresh_display()
                 for other_index in range(3):
                     if other_index != index:
@@ -397,12 +417,26 @@ class RelicSelector(tk.Tk):
             self.relic_lookup[index].pop(label, None)
             self.relic_cycle_index[index].pop(label, None)
 
+    # def refresh_display(self):
+    #     for col in range(3):
+    #         relic = self.selected_relics[col]
+    #         for row in range(3):
+    #             text = relic[row] if row < len(relic) else "—"
+    #             self.slot_labels[row][col].config(text=text)
+
     def refresh_display(self):
         for col in range(3):
-            relic = self.selected_relics[col]
-            for row in range(3):
-                text = relic[row] if row < len(relic) else "—"
-                self.slot_labels[row][col].config(text=text)
+            selection = self.selected_relics[col]
+            if selection:
+                name, attributes = selection
+                self.name_labels[col].config(text=name)
+                for row in range(3):
+                    text = attributes[row] if row < len(attributes) else "—"
+                    self.slot_labels[row][col].config(text=text)
+            else:
+                self.name_labels[col].config(text="—")
+                for row in range(3):
+                    self.slot_labels[row][col].config(text="—")
 
 
 if __name__ == "__main__":
