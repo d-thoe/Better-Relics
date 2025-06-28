@@ -81,6 +81,7 @@ def normalize_text(text):
         "shop'":"shop",
         "shop-":"shop",
         "'shop":"shop",
+        "shop.":"shop",
         "slecp":"sleep",
         "slecp'":"sleep",
         "'purchases":"purchases",
@@ -256,7 +257,7 @@ class RelicSelector(tk.Tk):
     def on_update_click(self):
         success = update_relics_csv()
         if not success:
-            tk.messagebox.showerror("Error", "Failed to process video.\nMake sure 'relics.mp4' is in the folder and playable.")
+            tk.messagebox.showerror("Error", f"Failed to process video.\nMake sure '{VIDEO_PATH}' is in the folder and playable.")
             return
 
         self.relics_by_color = load_relics_by_color(OUTPUT_CSV)
