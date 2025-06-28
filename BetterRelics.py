@@ -11,6 +11,7 @@ import csv
 import cv2
 import os
 import re
+import threading # for _update_relics_csv (GUI pbar) which uses threading to not freeze GUI during video parsing
 
 ## Running via script
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -47,11 +48,14 @@ COLOR_HEX = {
 # VIDEO_PATH = "relics.mp4"
 # OUTPUT_CSV = "relics.csv"
 # DEBUG_DIR = "debug_frames"
-VIDEO_PATH = os.path.join(get_app_dir(), "relics.mp4")
+VIDEO_NAME = "relics.mp4"
+VIDEO_PATH = os.path.join(get_app_dir(), VIDEO_NAME)
 OUTPUT_CSV = os.path.join(get_app_dir(), "relics.csv")
 DEBUG_DIR = os.path.join(get_app_dir(), "debug_frames")
 DEBUG = False
 FRAME_SKIP = 3
+
+# VIDEO_SHORT_PATH = os.path.join(os.path.basename(os.path.dirname(VIDEO_PATH)), VIDEO_NAME)
 
 print("Looking for CSV at:", os.path.abspath(OUTPUT_CSV))
 reader = easyocr.Reader(['en'], gpu=True)
@@ -201,7 +205,7 @@ def load_relics_by_color(file_path):
     return relics_by_color
 
 class RelicSelector(tk.Tk):
-    def __init__(self, relics_by_color):
+    def __init__(self):
         super().__init__()
         ### window setup
         self.title("Relic Selector by Dev")
@@ -214,7 +218,6 @@ class RelicSelector(tk.Tk):
         self.minsize(900, 320)
 
         ### content setup
-        self.relics_by_color = relics_by_color
         self.color_vars = [tk.StringVar() for _ in range(3)]
         self.search_vars = [tk.StringVar() for _ in range(3)]
         self.relic_lookup = [{} for _ in range(3)]
@@ -224,12 +227,35 @@ class RelicSelector(tk.Tk):
         self.result_boxes = []
         self.search_entries = []
         self.color_menus = []
+        
         self.name_labels = [None, None, None] # Selected Relic Name
         self.slot_labels = [[None]*3 for _ in range(3)] # Selected Relic Attr
-        self.style = ttk.Style()
+        # Loading bar during video parsing
+        self.progress_text = tk.Label(self, text="", font=("Arial", 10)) # Text label to show frame count and percent
+        self.progress_text.grid(row=3, column=0, pady=(5, 0), sticky="ew")
+        self.progress_var = tk.DoubleVar()
+        self.progress_bar = ttk.Progressbar(self, variable=self.progress_var, maximum=100)
+        self.progress_bar.grid(row=4, column=0, padx=10, pady=10, sticky="ew")
+        self.progress_text = tk.Label(self, text="")
+        self.progress_text.grid(row=998, column=0, sticky="ew")
+        self.progress_bar.grid_remove()
+        self.progress_text.grid_remove()
 
+        self.style = ttk.Style()
         self.build_ui()
         self.focus_force()
+
+        # Check or create CSV
+        if not os.path.exists(OUTPUT_CSV):
+            print(f"❌ '{OUTPUT_CSV}' not found. Creating a blank one...")
+            pd.DataFrame(columns=["Name", "Slot 1", "Slot 2", "Slot 3"]).to_csv(OUTPUT_CSV, index=False)
+            print(f"✅ Blank '{OUTPUT_CSV}' created. Please click 'Update Relics' in the app to import your data.")
+            self.threaded_update_relics_csv() # update relics on launch if no csv
+        # Load data
+        self.relics_by_color = load_relics_by_color(OUTPUT_CSV)
+        for i in range(3):
+            self.update_relic_list(i)
+
 
     def build_ui(self):
         FRAME_WIDTH = 360
@@ -311,21 +337,107 @@ class RelicSelector(tk.Tk):
                 label.grid(row=row + 1, column=col, padx=WIDGET_PADX, pady=4, sticky="ew")
                 self.slot_labels[row][col] = label
 
-
         # Update button at the bottom
-        update_button = tk.Button(self, text="Update Relics", command=self.on_update_click,
+        self.update_button = tk.Button(self, text="Update Relics", command=self.on_update_click,
                                   font=("Comic Sans", 10, "bold"), bg="#dddddd")
-        update_button.grid(row=3, column=0, pady=10)
+        self.update_button.grid(row=3, column=0, pady=10)
 
-    def on_update_click(self):
-        success = update_relics_csv()
-        if not success:
-            tk.messagebox.showerror("Error", f"Failed to process video.\nMake sure '{VIDEO_PATH}' is in the folder and playable.")
+
+    def threaded_update_relics_csv(self):
+        # self.progress_bar.grid(row=4, column=0, padx=10, pady=10, sticky="ew")
+        self.progress_bar.grid()
+        self.progress_text.grid()
+        self.update_button.config(state="disabled")  # Optional: disable during update
+        thread = threading.Thread(target=self._update_relics_csv)
+        thread.start()
+    def _update_relics_csv(self):
+        def safe_gui_update(progress, text=None):
+            self.after(0, lambda: self.progress_var.set(progress))
+            if text is not None:
+                self.after(0, lambda: self.progress_text.config(text=text))
+
+        cap = cv2.VideoCapture(VIDEO_PATH)
+        if not cap.isOpened():
+            def handle_error():
+                messagebox.showerror("Error", f"Failed to process video.\nMake sure '{VIDEO_PATH}' is in the folder and playable.")
+                self.progress_var.set(0)
+                self.progress_bar.grid_remove()
+                self.progress_text.grid_remove()
+                self.update_button.config(state="normal")
+            self.after(0, handle_error)
             return
 
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        if total_frames == 0:
+            self.after(0, lambda: messagebox.showerror("Error", "Video has 0 frames. Corrupt?"))
+            self.after(0, lambda: self.update_button.config(state="normal"))
+            return
+
+        self.after(0, lambda: self.progress_bar.grid(row=4, column=0, padx=10, pady=10, sticky="ew"))
+        safe_gui_update(0, f"Processing frame 0/{total_frames}")
+        print(f"\n🎥 Processing video ({total_frames} frames)...")
+
+        if DEBUG and not os.path.exists(DEBUG_DIR):
+            os.makedirs(DEBUG_DIR)
+
+        relics = []
+        seen_hashes = set()
+        frame_idx = 0
+
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            frame_idx += 1
+            progress = cap.get(cv2.CAP_PROP_POS_FRAMES) / total_frames * 100 # aka  frame_idx / total_frames * 100
+            safe_gui_update(progress, f"Processing frame {frame_idx}/{total_frames} of ./{VIDEO_NAME}")
+
+            if frame_idx % FRAME_SKIP != 0:
+                continue
+
+            # ---- Non-GUI work ----
+            name = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["name"])))
+            slot1 = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["slot1"])))
+            slot2 = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["slot2"])))
+            slot3 = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["slot3"])))
+
+            relic_hash = hash_relic(name, slot1, slot2, slot3)
+            if relic_hash in seen_hashes:
+                continue
+
+            seen_hashes.add(relic_hash)
+            relics.append({
+                "Name": name,
+                "Slot 1": slot1,
+                "Slot 2": slot2,
+                "Slot 3": slot3
+            })
+
+        cap.release()
+        safe_gui_update(100, f"Processing complete!  {len(relics)} relics found in ./{VIDEO_NAME},  Data saved to ./relics.csv") # last part of mp4 will be same relic, this updates pbar to go to 100%
+        pd.DataFrame(relics).to_csv(OUTPUT_CSV, index=False)
+        print(f"\n✅ Done! {len(relics)} unique relics saved to '{OUTPUT_CSV}'")
+
+        # self.after(0, lambda: self.progress_text.config(text="✅ Done processing video!"))
+        self.after(0, lambda: messagebox.showinfo("Finished", f"✅ Done processing  ./{VIDEO_NAME}!\n{len(relics)} relics found."))
+        self.after(0, lambda: self.progress_bar.grid_remove())
+        self.after(0, lambda: self.progress_text.grid_remove())
+        self.after(0, lambda: self.progress_var.set(0))
+        self.after(0, lambda: self.load_new_relics())
+        self.after(0, lambda: self.update_button.config(state="normal"))
+    def load_new_relics(self): # reload relics after post-processing
         self.relics_by_color = load_relics_by_color(OUTPUT_CSV)
         for i in range(3):
             self.update_relic_list(i)
+
+
+    def on_update_click(self):
+        # success = update_relics_csv()
+        self.threaded_update_relics_csv()
+        # self.relics_by_color = load_relics_by_color(OUTPUT_CSV)
+        # for i in range(3):
+        #     self.update_relic_list(i)
 
     def update_relic_list(self, index):
         color = self.color_vars[index].get()
@@ -440,12 +552,13 @@ class RelicSelector(tk.Tk):
 
 
 if __name__ == "__main__":
-    if not os.path.exists(OUTPUT_CSV):
-        print(f"❌ '{OUTPUT_CSV}' not found. Creating a blank one...")
-        pd.DataFrame(columns=["Name", "Slot 1", "Slot 2", "Slot 3"]).to_csv(OUTPUT_CSV, index=False)
-        print(f"✅ Blank '{OUTPUT_CSV}' created. Please click 'Update Relics' in the app to import your data.")
-        # update_relics_csv() # update relics on launch if no csv
+    # if not os.path.exists(OUTPUT_CSV):
+    #     print(f"❌ '{OUTPUT_CSV}' not found. Creating a blank one...")
+    #     pd.DataFrame(columns=["Name", "Slot 1", "Slot 2", "Slot 3"]).to_csv(OUTPUT_CSV, index=False)
+    #     print(f"✅ Blank '{OUTPUT_CSV}' created. Please click 'Update Relics' in the app to import your data.")
+    #     update_relics_csv() # update relics on launch if no csv
 
-    relics = load_relics_by_color(OUTPUT_CSV)
-    app = RelicSelector(relics)
+    # relics = load_relics_by_color(OUTPUT_CSV)
+    # app = RelicSelector(relics)
+    app = RelicSelector()
     app.mainloop()
