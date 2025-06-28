@@ -4,7 +4,7 @@ from tkinter import ttk
 from tqdm import tqdm
 import tkinter as tk
 import pandas as pd
-import numpy as np
+# import numpy as np
 import hashlib
 import easyocr
 import csv
@@ -12,7 +12,20 @@ import cv2
 import os
 import re
 
+## Running via script
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+## Running via .app (MacOS)
+import sys
+def get_app_dir():
+    # Inside PyInstaller bundle
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    # Running as a script
+    return os.path.dirname(os.path.abspath(__file__))
+
+## Running via .exe (Win)
+#TODO
 
 # === Constants ===
 COLOR_MAP = {
@@ -29,12 +42,14 @@ COLOR_HEX = {
 }
 
 # === Config. ===
-VIDEO_PATH = "relics.mp4"
-OUTPUT_CSV = "relics.csv"
-DEBUG_DIR = "debug_frames"
+# VIDEO_PATH = "relics.mp4"
+# OUTPUT_CSV = "relics.csv"
+# DEBUG_DIR = "debug_frames"
+VIDEO_PATH = os.path.join(get_app_dir(), "relics.mp4")
+OUTPUT_CSV = os.path.join(get_app_dir(), "relics.csv")
+DEBUG_DIR = os.path.join(get_app_dir(), "debug_frames")
 DEBUG = False
 FRAME_SKIP = 3
-SHOW_PREVIEW = False
 
 print("Looking for CSV at:", os.path.abspath(OUTPUT_CSV))
 reader = easyocr.Reader(['en'], gpu=True)
@@ -90,6 +105,7 @@ def normalize_text(text):
         "' $":"'s",
         " $":"'s",
         " ' ":" ",
+        "[[":"[",
     }
     for bad, good in replacements.items():
         text = text.replace(bad, good)
@@ -106,8 +122,9 @@ def crop_frame(frame, region):
     h, w = frame.shape[:2]
     return frame[max(0,y1):min(h,y2), max(0,x1):min(w,x2)]
 
-def hash_relic(name, slot1, slot2, slot3):
-    full_text = f"{name}|{slot1}|{slot2}|{slot3}".lower().strip()
+def hash_relic(name, *slots):
+    parts = [name.strip().lower()] + [s.strip().lower() for s in slots]
+    full_text = "|".join(parts)     # aka {name}|{slot1}|{slot2}|{slot3}
     return hashlib.sha256(full_text.encode()).hexdigest()
 
 def update_relics_csv():
@@ -184,7 +201,17 @@ def load_relics_by_color(file_path):
 class RelicSelector(tk.Tk):
     def __init__(self, relics_by_color):
         super().__init__()
+        ### window setup
         self.title("Relic Selector by Dev")
+        icon_path = os.path.join(os.path.dirname(__file__), "assets", "relic_icon.png")
+        try:
+            icon_img = tk.PhotoImage(file=icon_path)
+            self.iconphoto(False, icon_img)
+        except Exception as e:
+            print(f"⚠️ Could not load icon: {e}")
+        self.minsize(900, 320)
+
+        ### content setup
         self.relics_by_color = relics_by_color
         self.color_vars = [tk.StringVar() for _ in range(3)]
         self.search_vars = [tk.StringVar() for _ in range(3)]
@@ -197,56 +224,79 @@ class RelicSelector(tk.Tk):
         self.color_menus = []
         self.slot_labels = [[None]*3 for _ in range(3)]
         self.style = ttk.Style()
+
         self.build_ui()
+        self.focus_force()
 
     def build_ui(self):
         FRAME_WIDTH = 360
         WIDGET_PADX = 6
 
-        # Columns
+        # Main container
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
         main_frame = tk.Frame(self)
-        main_frame.grid(row=0, column=0, pady=10)
+        main_frame.grid(row=0, column=0, pady=10, sticky="nsew")
+        main_frame.grid_rowconfigure(0, weight=1)
+        for i in range(3):
+            main_frame.grid_columnconfigure(i, weight=1, minsize=180)
+
+        # Columns
         column_frames = []
         for i in range(3):
-            col = tk.Frame(main_frame, width=FRAME_WIDTH)
-            col.grid(row=0, column=i, padx=WIDGET_PADX, pady=5, sticky="n")
-            col.grid_propagate(False)
+            col = tk.Frame(main_frame)#, width=FRAME_WIDTH)
+            col.grid(row=0, column=i, padx=WIDGET_PADX, pady=5, sticky="nsew")
+            # col.grid_propagate(False)
             column_frames.append(col)
 
         for i, col_frame in enumerate(column_frames):
-            tk.Label(col_frame, text=f"Relic {i+1} Color:", font=("Comic Sans", 10, "bold")).pack()
+            # Lock top rows to natural height
+            col_frame.grid_rowconfigure(0, weight=0)
+            col_frame.grid_rowconfigure(1, weight=0)
+            col_frame.grid_rowconfigure(2, weight=0)
+            col_frame.grid_rowconfigure(3, weight=1)  # Only listbox grows
+            col_frame.grid_columnconfigure(0, weight=1)
+            
+            # Label
+            tk.Label(col_frame, text=f"Relic {i+1} Color:", font=("Comic Sans", 10, "bold")).grid(row=0, column=0, sticky="ew", padx=WIDGET_PADX, pady=(0, 2))
+
+            # Dropdown color
             style_name = f"Custom{i}.TCombobox"
             self.style.theme_use('default')
             self.style.configure(style_name, foreground="black", fieldbackground="white", background="white")
             self.style.map(style_name, fieldbackground=[('readonly', "white")])
 
             color_menu = ttk.Combobox(col_frame, textvariable=self.color_vars[i], values=list(COLOR_MAP.values()),
-                                      state="readonly", style=style_name, width=45)
-            color_menu.pack(pady=(0, 5), fill="x")
+                                    state="readonly", style=style_name)
+            color_menu.grid(row=1, column=0, sticky="ew", padx=WIDGET_PADX, pady=(0, 4))
             color_menu.bind("<<ComboboxSelected>>", lambda e, idx=i: self.update_relic_list(idx))
             self.color_menus.append((color_menu, style_name))
 
-            entry = ttk.Entry(col_frame, textvariable=self.search_vars[i], width=71)
-            entry.pack(fill="x")
+            # Search entry
+            entry = ttk.Entry(col_frame, textvariable=self.search_vars[i])
+            entry.grid(row=2, column=0, sticky="ew", padx=WIDGET_PADX, pady=(0, 4))
             entry.bind("<KeyRelease>", lambda e, idx=i: self.filter_results(idx))
             self.search_entries.append(entry)
 
-            result_box = tk.Listbox(col_frame, height=6, width=71)
-            result_box.pack(fill="x")
+            # Listbox
+            result_box = tk.Listbox(col_frame)
+            result_box.grid(row=3, column=0, sticky="nsew", padx=WIDGET_PADX, pady=(0, 0))
             result_box.bind("<<ListboxSelect>>", lambda e, idx=i: self.select_relic(idx))
             result_box.bind("<d>", lambda e, idx=i: self.cycle_relic(idx, forward=True))
             result_box.bind("<a>", lambda e, idx=i: self.cycle_relic(idx, forward=False))
             self.result_boxes.append(result_box)
-
-        # Grid display
-        grid_frame = tk.Frame(self)
+                    
+        # Grid display of selected relics
+        grid_frame = tk.Frame(self, width=930)
         grid_frame.grid(row=1, column=0, pady=10)
+        for col in range(3):
+            grid_frame.grid_columnconfigure(col, minsize=300, weight=1)
         for row in range(3):
             for col in range(3):
-                label = tk.Label(grid_frame, text="—", relief="groove", width=52, height=2,
-                                 anchor="w", justify="left", wraplength=FRAME_WIDTH - 20,
-                                 padx=6, font=("Comic Sans", 10))
-                label.grid(row=row, column=col, padx=WIDGET_PADX, pady=4)
+                label = tk.Label(grid_frame, text="—", relief="groove", anchor="w", justify="left",
+                                 padx=6, font=("Comic Sans", 10), height=2, wraplength=275)
+                label.grid(row=row, column=col, padx=WIDGET_PADX, pady=4, sticky="ew")
                 self.slot_labels[row][col] = label
 
         # Update button at the bottom
@@ -285,7 +335,6 @@ class RelicSelector(tk.Tk):
             display_entries.append(label)
             self.relic_lookup[index][label] = group_list
             self.relic_cycle_index[index][label] = 0
-
 
         self.dropdown_lists[index] = sorted(display_entries)
         self.update_listbox(index, self.dropdown_lists[index])
@@ -355,11 +404,13 @@ class RelicSelector(tk.Tk):
                 text = relic[row] if row < len(relic) else "—"
                 self.slot_labels[row][col].config(text=text)
 
+
 if __name__ == "__main__":
     if not os.path.exists(OUTPUT_CSV):
         print(f"❌ '{OUTPUT_CSV}' not found. Creating a blank one...")
         pd.DataFrame(columns=["Name", "Slot 1", "Slot 2", "Slot 3"]).to_csv(OUTPUT_CSV, index=False)
         print(f"✅ Blank '{OUTPUT_CSV}' created. Please click 'Update Relics' in the app to import your data.")
+        # update_relics_csv() # update relics on launch if no csv
 
     relics = load_relics_by_color(OUTPUT_CSV)
     app = RelicSelector(relics)
