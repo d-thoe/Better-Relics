@@ -1,15 +1,16 @@
-import csv
-import tkinter as tk
-from tkinter import ttk
 from collections import defaultdict
-import cv2
-import numpy as np
+from tkinter import messagebox
+from tkinter import ttk
+from tqdm import tqdm
+import tkinter as tk
 import pandas as pd
-import os
+import numpy as np
 import hashlib
 import easyocr
+import csv
+import cv2
+import os
 import re
-from tqdm import tqdm
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -20,7 +21,6 @@ COLOR_MAP = {
     "Drizzly": "Blue",
     "Tranquil": "Green"
 }
-
 COLOR_HEX = {
     "Red": "#ff998b",
     "Yellow": "#d1ce2c",
@@ -28,7 +28,7 @@ COLOR_HEX = {
     "Green": "#3eff3e"
 }
 
-# === OCR + Video config ===
+# === Config. ===
 VIDEO_PATH = "relics.mp4"
 OUTPUT_CSV = "relics.csv"
 DEBUG_DIR = "debug_frames"
@@ -36,17 +36,18 @@ DEBUG = False
 FRAME_SKIP = 3
 SHOW_PREVIEW = False
 
-print("Current working directory:", os.getcwd())
-print("Looking for video at:", os.path.abspath(VIDEO_PATH))
-
+print("Looking for CSV at:", os.path.abspath(OUTPUT_CSV))
 reader = easyocr.Reader(['en'], gpu=True)
 
-ROIS = {
+# === Regions ===
+ROIS = { 
+    # Works for 1080p:
     "name":  (770, 810, 1060, 1400),
     "slot1": (810, 880, 1105, 1700),
     "slot2": (870, 940, 1105, 1700),
     "slot3": (930, 1000, 1105, 1700),
 }
+
 
 def normalize_text(text):
     if not text:
@@ -54,7 +55,7 @@ def normalize_text(text):
     text = re.sub(r'\s{2,}', ' ', text)
     replacements = {
         "art'$": "art's",
-        "art’": "Art",  # Fancy quotes
+        "art’": "Art",  
         "’": "'",
         "armament'$": "armament's",
         "armament' ": "armament's ",
@@ -112,11 +113,11 @@ def update_relics_csv():
     cap = cv2.VideoCapture(VIDEO_PATH)
     if not cap.isOpened():
         print(f"❌ Could not open video: {VIDEO_PATH}")
-        return False  # Indicate failure
+        return False  
     
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     if total_frames == 0:
-        print(f"❌ Video has 0 frames. Is it corrupted or empty?")
+        print(f"❌ Video has 0 frames. Corrupt?")
         return False
     
     print(f"\n🎥 Processing video ({total_frames} frames)...")
@@ -253,7 +254,11 @@ class RelicSelector(tk.Tk):
         update_button.grid(row=2, column=0, pady=10)
 
     def on_update_click(self):
-        update_relics_csv()
+        success = update_relics_csv()
+        if not success:
+            tk.messagebox.showerror("Error", "Failed to process video.\nMake sure 'relics.mp4' is in the folder and playable.")
+            return
+
         self.relics_by_color = load_relics_by_color(OUTPUT_CSV)
         for i in range(3):
             self.update_relic_list(i)
@@ -350,14 +355,11 @@ class RelicSelector(tk.Tk):
                 self.slot_labels[row][col].config(text=text)
 
 if __name__ == "__main__":
-    if not update_relics_csv():
-        print("Exiting due to video processing error.")
-        exit(1)
-
     if not os.path.exists(OUTPUT_CSV):
-        print(f"❌ Missing expected output file: {OUTPUT_CSV}")
-        exit(1)
-        
-    relics = load_relics_by_color("relics.csv")
+        print(f"❌ '{OUTPUT_CSV}' not found. Creating a blank one...")
+        pd.DataFrame(columns=["Name", "Slot 1", "Slot 2", "Slot 3"]).to_csv(OUTPUT_CSV, index=False)
+        print(f"✅ Blank '{OUTPUT_CSV}' created. Please click 'Update Relics' in the app to import your data.")
+
+    relics = load_relics_by_color(OUTPUT_CSV)
     app = RelicSelector(relics)
     app.mainloop()
