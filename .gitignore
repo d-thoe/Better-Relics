@@ -1,0 +1,13 @@
+# Ignore all .mp4 files
+*.mp4
+
+# Ignore specific file
+relics.csv
+BetterRelics.spec
+
+# Ignore a folder and all its contents
+build/
+dist/
+
+# Ignore all .DS_Store files (macOS)
+.DS_Store
