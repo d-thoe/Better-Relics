@@ -133,53 +133,6 @@ def hash_relic(name, *slots):
     full_text = "|".join(parts)     # aka {name}|{slot1}|{slot2}|{slot3}
     return hashlib.sha256(full_text.encode()).hexdigest()
 
-def update_relics_csv():
-    cap = cv2.VideoCapture(VIDEO_PATH)
-    if not cap.isOpened():
-        print(f"❌ Could not open video: {VIDEO_PATH}")
-        return False  
-    
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    if total_frames == 0:
-        print(f"❌ Video has 0 frames. Corrupt?")
-        return False
-    
-    print(f"\n🎥 Processing video ({total_frames} frames)...")
-    if DEBUG and not os.path.exists(DEBUG_DIR):
-        os.makedirs(DEBUG_DIR)
-
-    relics, seen_hashes = [], set()
-    with tqdm(total=total_frames, desc="Processing", unit="frame") as pbar:
-        frame_idx = 0
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-            if frame_idx % FRAME_SKIP != 0:
-                frame_idx += 1
-                pbar.update(1)
-                continue
-
-            name  = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["name"])))
-            slot1 = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["slot1"])))
-            slot2 = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["slot2"])))
-            slot3 = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["slot3"])))
-
-            relic_hash = hash_relic(name, slot1, slot2, slot3)
-            if relic_hash in seen_hashes:
-                frame_idx += 1
-                pbar.update(1)
-                continue
-            seen_hashes.add(relic_hash)
-            relics.append({"Name": name, "Slot 1": slot1, "Slot 2": slot2, "Slot 3": slot3})
-            frame_idx += 1
-            pbar.update(1)
-
-    cap.release()
-    pd.DataFrame(relics).to_csv(OUTPUT_CSV, index=False)
-    print(f"\n✅ Done! {len(relics)} unique relics saved to '{OUTPUT_CSV}'")
-    return True  # Indicate success
-
 def detect_delimiter(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         sample = f.readline()
@@ -433,7 +386,6 @@ class RelicSelector(tk.Tk):
 
 
     def on_update_click(self):
-        # success = update_relics_csv()
         self.threaded_update_relics_csv()
         # self.relics_by_color = load_relics_by_color(OUTPUT_CSV)
         # for i in range(3):
@@ -529,13 +481,6 @@ class RelicSelector(tk.Tk):
             self.relic_lookup[index].pop(label, None)
             self.relic_cycle_index[index].pop(label, None)
 
-    # def refresh_display(self):
-    #     for col in range(3):
-    #         relic = self.selected_relics[col]
-    #         for row in range(3):
-    #             text = relic[row] if row < len(relic) else "—"
-    #             self.slot_labels[row][col].config(text=text)
-
     def refresh_display(self):
         for col in range(3):
             selection = self.selected_relics[col]
@@ -552,13 +497,5 @@ class RelicSelector(tk.Tk):
 
 
 if __name__ == "__main__":
-    # if not os.path.exists(OUTPUT_CSV):
-    #     print(f"❌ '{OUTPUT_CSV}' not found. Creating a blank one...")
-    #     pd.DataFrame(columns=["Name", "Slot 1", "Slot 2", "Slot 3"]).to_csv(OUTPUT_CSV, index=False)
-    #     print(f"✅ Blank '{OUTPUT_CSV}' created. Please click 'Update Relics' in the app to import your data.")
-    #     update_relics_csv() # update relics on launch if no csv
-
-    # relics = load_relics_by_color(OUTPUT_CSV)
-    # app = RelicSelector(relics)
     app = RelicSelector()
     app.mainloop()
