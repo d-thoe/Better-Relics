@@ -12,17 +12,12 @@ import cv2
 import os
 import re
 import threading # for _update_relics_csv (GUI pbar) which uses threading to not freeze GUI during video parsing
-
-import sys
-def get_app_dir():
-    # Inside PyInstaller bundle
-    if getattr(sys, 'frozen', False):
-        return os.path.dirname(sys.executable)
-    # Running as a script
-    return os.path.dirname(os.path.abspath(__file__))
+from tkinter import filedialog, Tk # file in
+from pathlib import Path # find file home path
 
 
 # === Constants ===
+VIDEO_NAME = "relics.mp4"
 COLOR_MAP = {
     "Burning": "Red",
     "Luminous": "Yellow",
@@ -35,24 +30,49 @@ COLOR_HEX = {
     "Yellow": "#d1ce2c",
     "Blue": "#62aff8",
     "Green": "#3eff3e",
-    "White": "eeeeee"
+    "White": "#eeeeee"
 }
 
+
+# === File I/O ===
+OUTPUT_DIR = Path.home() / "Documents" / "BetterRelics"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)  # Ensure it exists
+
+def get_relics_video_path():
+    base_path = OUTPUT_DIR / VIDEO_NAME
+    if base_path.exists():
+        return str(base_path)
+    
+    # Fallback: show file dialog
+    root = Tk()
+    root.withdraw()  # Hide the main window
+
+    try:    # Optional: set the same icon
+        icon_path = os.path.join(os.path.dirname(__file__), "assets", "relic_icon.png")
+        icon_img = tk.PhotoImage(file=icon_path)
+        root.iconphoto(False, icon_img)
+    except Exception as e: print(f"⚠️ Failed to set icon on file dialog: {e}")
+
+    selected = filedialog.askopenfilename(
+        title=f"Select {VIDEO_NAME}",
+        filetypes=[("MP4 files", "*.mp4")],)
+    print(f"str(selected):{str(selected)}")
+    root.destroy()
+    return str(selected) if selected else None
+
+
 # === Config. ===
-# VIDEO_PATH = "relics.mp4"
-# OUTPUT_CSV = "relics.csv"
-# DEBUG_DIR = "debug_frames"
-VIDEO_NAME = "relics.mp4"
-VIDEO_PATH = os.path.join(get_app_dir(), VIDEO_NAME)
-OUTPUT_CSV = os.path.join(get_app_dir(), "relics.csv")
-DEBUG_DIR = os.path.join(get_app_dir(), "debug_frames")
+# video path is selected by user and assigned to self.video_path in RelicSelector class
+# VIDEO_PATH = get_relics_video_path()  # Toggle to force mp4 selection on launch #BUG: MacOS; file-select window opens behind all
+OUTPUT_CSV = OUTPUT_DIR / "relics.csv"
+DEBUG_DIR = OUTPUT_DIR / "debug_frames"
 DEBUG = False
 FRAME_SKIP = 3
-
 # VIDEO_SHORT_PATH = os.path.join(os.path.basename(os.path.dirname(VIDEO_PATH)), VIDEO_NAME)
 
 print("Looking for CSV at:", os.path.abspath(OUTPUT_CSV))
 reader = easyocr.Reader(['en'], gpu=True)
+
 
 # === Regions ===
 ROIS = { 
@@ -64,6 +84,7 @@ ROIS = {
 }
 
 
+# === Functions Start ===
 def normalize_text(text):
     if not text:
         return ""
@@ -106,6 +127,7 @@ def normalize_text(text):
         " $":"'s",
         " ' ":" ",
         "[[":"[",
+        "i5":"is",
     }
     for bad, good in replacements.items():
         text = text.replace(bad, good)
@@ -163,6 +185,7 @@ class RelicSelector(tk.Tk):
         super().__init__()
         ### window setup
         self.title("Relic Selector by Dev")
+        self.video_path = OUTPUT_DIR / VIDEO_NAME # leads to Documents/relics.mp4 - this will be updated after user prompted for mp4 file in get_relics_video_path()
         icon_path = os.path.join(os.path.dirname(__file__), "assets", "relic_icon.png")
         try:
             icon_img = tk.PhotoImage(file=icon_path)
@@ -172,7 +195,7 @@ class RelicSelector(tk.Tk):
         self.minsize(900, 320)
 
         ### content setup
-        self.color_vars = [tk.StringVar() for _ in range(3)]
+        self.color_vars = [tk.StringVar() for _ in range(3)] # default to white to force a populated listbox
         self.search_vars = [tk.StringVar() for _ in range(3)]
         self.relic_lookup = [{} for _ in range(3)]
         self.relic_cycle_index = [{} for _ in range(3)]
@@ -208,7 +231,7 @@ class RelicSelector(tk.Tk):
             print(f"❌ '{OUTPUT_CSV}' not found. Creating a blank one...")
             pd.DataFrame(columns=["Name", "Slot 1", "Slot 2", "Slot 3"]).to_csv(OUTPUT_CSV, index=False)
             print(f"✅ Blank '{OUTPUT_CSV}' created. Please click 'Update Relics' in the app to import your data.")
-            self.threaded_update_relics_csv() # update relics on launch if no csv
+            # self.threaded_update_relics_csv() # update relics on launch if no csv
         # Load data
         self.relics_by_color = load_relics_by_color(OUTPUT_CSV)
         for i in range(3):
@@ -325,7 +348,7 @@ class RelicSelector(tk.Tk):
         self.progress_bar.grid()
         self.progress_text.grid()
         self.update_button.config(state="disabled")  # Optional: disable during update
-        thread = threading.Thread(target=self._update_relics_csv)
+        thread = threading.Thread(target=self._update_relics_csv, daemon=True)
         thread.start()
     def _update_relics_csv(self):
         def safe_gui_update(progress, text=None):
@@ -333,10 +356,10 @@ class RelicSelector(tk.Tk):
             if text is not None:
                 self.after(0, lambda: self.progress_text.config(text=text))
 
-        cap = cv2.VideoCapture(VIDEO_PATH)
+        cap = cv2.VideoCapture(self.video_path)
         if not cap.isOpened():
             def handle_error():
-                messagebox.showerror("Error", f"Failed to process video.\nMake sure '{VIDEO_PATH}' is in the folder and playable.")
+                messagebox.showerror("Error", f"Failed to process video.\nMake sure '{self.video_path}' is in the folder and playable.")
                 self.progress_var.set(0)
                 self.progress_bar.grid_remove()
                 self.progress_text.grid_remove()
@@ -368,7 +391,7 @@ class RelicSelector(tk.Tk):
 
             frame_idx += 1
             progress = cap.get(cv2.CAP_PROP_POS_FRAMES) / total_frames * 100 # aka  frame_idx / total_frames * 100
-            safe_gui_update(progress, f"Processing frame {frame_idx}/{total_frames} of ./{VIDEO_NAME}")
+            safe_gui_update(progress, f"Processing frame {frame_idx}/{total_frames} of {self.video_path}")
 
             if frame_idx % FRAME_SKIP != 0:
                 continue
@@ -392,12 +415,12 @@ class RelicSelector(tk.Tk):
             })
 
         cap.release()
-        safe_gui_update(100, f"Processing complete!  {len(relics)} relics found in ./{VIDEO_NAME},  Data saved to ./relics.csv") # last part of mp4 will be same relic, this updates pbar to go to 100%
+        safe_gui_update(100, f"Processing complete!  {len(relics)} relics found in {self.video_path},  Data saved to ./relics.csv") # last part of mp4 will be same relic, this updates pbar to go to 100%
         pd.DataFrame(relics).to_csv(OUTPUT_CSV, index=False)
         print(f"\n✅ Done! {len(relics)} unique relics saved to '{OUTPUT_CSV}'")
 
         # self.after(0, lambda: self.progress_text.config(text="✅ Done processing video!"))
-        self.after(0, lambda: messagebox.showinfo("Finished", f"✅ Done processing  ./{VIDEO_NAME}!\n{len(relics)} relics found."))
+        self.after(0, lambda: messagebox.showinfo("Finished", f"✅ Done processing  {self.video_path}!\n{len(relics)} relics found."))
         self.after(0, lambda: self.progress_bar.grid_remove())
         self.after(0, lambda: self.progress_text.grid_remove())
         self.after(0, lambda: self.progress_var.set(0))
@@ -409,6 +432,10 @@ class RelicSelector(tk.Tk):
             self.update_relic_list(i)
 
     def on_update_click(self):
+        self.video_path = get_relics_video_path()
+        if not self.video_path:
+            messagebox.showerror("Error", "No video selected. Update cancelled.")
+            return        
         self.threaded_update_relics_csv()
 
 
