@@ -390,7 +390,7 @@ class RelicSelector(tk.Tk):
 
             frame_idx += 1
             progress = cap.get(cv2.CAP_PROP_POS_FRAMES) / total_frames * 100 # aka  frame_idx / total_frames * 100
-            safe_gui_update(progress, f"Processing frame {frame_idx}/{total_frames} of {self.video_path}")
+            safe_gui_update(progress, f"Processing frame {frame_idx}/{total_frames}\nfrom {self.video_path}")
 
             if frame_idx % FRAME_SKIP != 0:
                 continue
@@ -471,6 +471,21 @@ class RelicSelector(tk.Tk):
         self.update_listbox(index, self.dropdown_lists[index])
         self.update_color_style(index, color)
 
+        ### Check if current selection is still valid after relic list update 
+        # (EX: relic with 2 variants, slot 1 selects one, slot 2 the other. Update slot 1 & 2 from x/2 -> x/1)
+        selection = self.selected_relics[index]
+        if selection:
+            selected_name, selected_attrs = selection
+            still_valid = any(
+                selected_name == g_name and selected_attrs == g_attrs
+                for group in self.relic_lookup[index].values()
+                for g_name, g_attrs in group
+            )
+            if not still_valid:
+                self.selected_relics[index] = []
+        ###
+
+
 
     def update_color_style(self, index, color):
         _, style_name = self.color_menus[index]
@@ -504,6 +519,7 @@ class RelicSelector(tk.Tk):
                 for other_index in range(3):
                     if other_index != index:
                         self.update_relic_list(other_index)
+                self.refresh_display() # for the update variants of other columns if matched
 
 
     def cycle_relic(self, index, forward=True):
