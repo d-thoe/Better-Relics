@@ -22,7 +22,7 @@ pip -r requirements.txt
 > ```bash
 > python -m venv venv
 > .\venv\Scripts\Activate.ps1   # Windows
-> ./venv/bin/activate           # MacOS
+> source ./venv/bin/activate    # MacOS
 > ```
 
 ---

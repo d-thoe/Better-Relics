@@ -14,7 +14,8 @@ import re
 import threading # for _update_relics_csv (GUI pbar) which uses threading to not freeze GUI during video parsing
 from tkinter import filedialog, Tk # file in
 from pathlib import Path # find file home path
-
+from TextNormalizer import TextNormalizer
+normalizer = TextNormalizer("AllRelicNames.txt", "AllRelicAttributes.txt")
 
 # === Constants ===
 VIDEO_NAME = "relics.mp4"
@@ -85,55 +86,6 @@ ROIS = {
 
 
 # === Functions Start ===
-def normalize_text(text):
-    if not text:
-        return ""
-    text = re.sub(r'\s{2,}', ' ', text)
-    replacements = {
-        "art'$": "art's",
-        "art’": "Art",  
-        "’": "'",
-        "armament'$": "armament's",
-        "armament' ": "armament's ",
-        "armament'": "armament's",
-        "armaments": "armament's",
-        "armament s": "armament's",
-        "armament'":"armament's",
-        "armament'ss":"armament's",
-        "armament$":"armament's",
-        "Fexpedition": "expedition",
-        "Fexpeditions": "expeditions",
-        "of. expedition":"of expedition",
-        "of, expedition":"of expedition",
-        "of = expedition":"of expedition",
-        "Endureat":"Endure at",
-        "Poison Moth Flightat": "Poison Moth Flight at",
-        "landing . critical":"landing a critical",
-        "landing : critical":"landing a critical",
-        "landing. critical":"landing a critical",
-        "etc:":"etc.",
-        "Two ~Handing":"Two-Handing",
-        "Fability":"ability",
-        "shop'":"shop",
-        "shop-":"shop",
-        "'shop":"shop",
-        "shop.":"shop",
-        "slecp":"sleep",
-        "slecp'":"sleep",
-        "'purchases":"purchases",
-        "'s $":"'s",
-        "'$":"'s",
-        "' $":"'s",
-        " $":"'s",
-        " ' ":" ",
-        "[[":"[",
-        "i5":"is",
-    }
-    for bad, good in replacements.items():
-        text = text.replace(bad, good)
-    return text.strip()
-
-
 def extract_text_easyocr(img):
     if img is None or img.size == 0:
         return ""
@@ -397,10 +349,10 @@ class RelicSelector(tk.Tk):
                 continue
 
             # ---- Non-GUI work ----
-            name = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["name"])))
-            slot1 = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["slot1"])))
-            slot2 = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["slot2"])))
-            slot3 = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["slot3"])))
+            name = normalizer.normalize(extract_text_easyocr(crop_frame(frame, ROIS["name"])))
+            slot1 = normalizer.normalize(extract_text_easyocr(crop_frame(frame, ROIS["slot1"])))
+            slot2 = normalizer.normalize(extract_text_easyocr(crop_frame(frame, ROIS["slot2"])))
+            slot3 = normalizer.normalize(extract_text_easyocr(crop_frame(frame, ROIS["slot3"])))
 
             relic_hash = hash_relic(name, slot1, slot2, slot3)
             if relic_hash in seen_hashes:

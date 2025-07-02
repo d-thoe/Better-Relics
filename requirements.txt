@@ -1,3 +1,6 @@
 pandas
 easyocr
 tqdm
+# opencv-python-headless 60MB smaller that cv2, use cv2 if needing: cv2.imshow(...) cv2.waitKey(...) cv2.destroyAllWindows()
+opencv-python-headless
+rapidfuzz
