@@ -1,7 +1,6 @@
 from collections import defaultdict
 from tkinter import messagebox
 from tkinter import ttk
-from tqdm import tqdm
 import tkinter as tk
 import pandas as pd
 # import numpy as np
