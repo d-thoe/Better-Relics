@@ -1,0 +1,378 @@
+Arcane +1
+Arcane +2
+Arcane +3
+Armament deals fire damage +1 at start of expedition
+Art gauge charged from successful guarding
+Art gauge fills moderately upon critical hit
+Attack Boost from Nearby Allies
+Attack power increases after using grease items
+Attack power permanently increased for each evergaol prisoner defeated
+Attack power up after defeating a Night Invader
+Attack power up when facing frostbite-afflicted enemy
+Attack power up when facing poison-afflicted enemy
+Attack power up when facing scarlet rot-afflicted enemy
+Attack power up when facing sleep-afflicted enemy
+Attacks Create Magic Bursts Versus Sleeping Enemies
+Attacks Inflict Blood Loss
+Attacks Inflict Blood Loss +1
+Attacks Inflict Blood Loss +2
+Attacks Inflict Death Blight
+Attacks Inflict Frost
+Attacks Inflict Frost +1
+Attacks Inflict Frost +2
+Attacks Inflict Frost +3
+Attacks Inflict Madness
+Attacks Inflict Poison
+Attacks Inflict Poison +1
+Attacks Inflict Poison +2
+Attacks Inflict Scarlet Rot
+Attacks Inflict Scarlet Rot +1
+Attacks Inflict Scarlet Rot +2
+Attacks Inflict Sleep
+Attacks Inflict Sleep +1
+Attacks Inflict Sleep +2
+Attacks Inflict Sleep +3
+Bewitching Branches in possession at start of expedition
+Boosts Attack Power of Added Affinity Attacks
+Changes compatible armament's skill to Blood Blade at start of expedition
+Changes compatible armament's skill to Chilling Mist at start of expedition
+Changes compatible armament's skill to Determination at start of expedition
+Changes compatible armament's skill to Endure at start of expedition
+Changes compatible armament's skill to Eruption at start of expedition
+Changes compatible armament's skill to Flaming Strike at start of expedition
+Changes compatible armament's skill to Glintblade Phalanx at start of expedition
+Changes compatible armament's skill to Gravitas at start of expedition
+Changes compatible armament's skill to Hoarfrost Stomp at start of expedition
+Changes compatible armament's skill to Lightning Slash at start of expedition
+Changes compatible armament's skill to Poison Moth Flight at start of expedition
+Changes compatible armament's skill to Poisonous Mist at start of expedition
+Changes compatible armament's skill to Prayerful Strike at start of expedition
+Changes compatible armament's skill to Quickstep at start of expedition
+Changes compatible armament's skill to Rain of Arrows at start of expedition
+Changes compatible armament's skill to Sacred Blade at start of expedition
+Changes compatible armament's skill to Seppuku at start of expedition
+Changes compatible armament's skill to Storm Stomp at start of expedition
+Changes compatible armament's skill to Thunderbolt at start of expedition
+Changes compatible armament's skill to White Shadow's Lure at start of expedition
+Character Skill Cooldown Reduction +1
+Character Skill Cooldown Reduction +2
+Character Skill Cooldown Reduction +3
+Colossal armaments are coated in rock when performing charged attacks
+Consecutive Guards Harden Skin
+Critical Hit Adds Lightning Effect
+Critical Hit Boosts Stamina Recovery Speed
+Critical Hit Creates Sleep Mist
+Critical Hit HP Restoration
+Critical hits deal huge damage on poisoned enemies
+Critical Hits Earn Runes
+Crystal Darts in possession at start of expedition
+Defeating enemies fills more of the Art gauge
+Defeating enemies near Totem Stela restores HP
+Defeating enemies restores HP for allies but not for self
+Dexterity +1
+Dexterity +2
+Dexterity +3
+Draw enemy attention while guarding
+[Duchess] Become difficult to spot and silence footsteps after landing a critical from behind
+[Duchess] Character Skill inflicts sleep upon enemies
+[Duchess] Dagger chain attack reprises event upon nearby enemies
+[Duchess] Defeating enemies while Art is active ups attack power
+[Duchess] Duration of Ultimate Art extended
+[Duchess] Improved Character Skill Attack Power
+Endurance +1
+Endurance +2
+Endurance +3
+[Executor] Attack power up while Ultimate Art is active
+[Executor] Character Skill Boosts Attack but Attacking Drains HP
+[Executor] Improves effect of ability but lowers resistance to status ailments
+[Executor] Roaring restores HP while Art is active
+[Executor] While Character Skill is active, unlocking use of cursed sword restores HP
+Faith +1
+Faith +2
+Faith +3
+Fire Attack Power Up
+Fire Attack Power Up +1
+Fire Attack Power Up +2
+Fire Critical Hit Grants Max Stamina Boost
+Fire Damage Negation Up
+Fire Grease in possession at start of expedition
+Fire Pots in possession at start of expedition
+Flask Also Heals Allies
+FP Restoration upon Axe Attacks
+FP Restoration upon Bow Attacks
+FP Restoration upon Claw Attacks
+FP Restoration upon Colossal Sword Attacks
+FP Restoration upon Colossal Weapon Attacks
+FP Restoration upon Curved Greatsword Attacks
+FP Restoration upon Curved Sword Attacks
+FP Restoration upon Dagger Attacks
+FP Restoration upon Fist Attacks
+FP Restoration upon Flail Attacks
+FP Restoration upon Great Hammer Attacks
+FP Restoration upon Great Spear Attacks
+FP Restoration upon Greataxe Attacks
+FP Restoration upon Greatsword Attacks
+FP Restoration upon Halberd Attacks
+FP Restoration upon Hammer Attacks
+FP Restoration upon Heavy Thrusting Sword Attacks
+FP Restoration upon Katana Attacks
+FP Restoration upon Pike Attacks
+FP Restoration upon Reaper Attacks
+FP Restoration upon Spear Attacks
+FP Restoration upon Straight Sword Attacks
+FP Restoration upon Successive Attacks
+FP Restoration upon Successive Attacks(Old Pocket Watch)
+FP Restoration upon Thrusting Sword Attacks
+FP Restoration upon Twinblade Attacks
+FP Restoration upon Whip Attacks
+Gesture "Crossed Legs" Builds Up Madness
+Glintstone Scraps in possession at start of expedition
+Gravity Stone Chunks in possession at start of expedition
+Guard counter is given a boost based on current HP
+Guard Counters Cast Light Pillar
+[Guardian] Become the target of enemy aggression when ability is activated
+[Guardian] Character Skill inflicts Holy damage
+[Guardian] Creates whirlwind when charging halberd attacks
+[Guardian] Damage negation for allies improved when using Ultimate Art
+[Guardian] Improved Character Skill range
+[Guardian] Increased duration for Character Skill
+[Guardian] Reflect a portion of damage received when ability is activated
+[Guardian] Restores allies' HP when Character Skill is used
+[Guardian] Slowly restores nearby allies' HP while Art is active
+[Guardian] Slowly restores nearby allies' HP while Art is active (Witch's Brooch)
+Holy Attack Power Up
+Holy Attack Power Up +1
+Holy Attack Power Up +2
+Holy Damage Negation Up
+Holy Grease in possession at start of expedition
+Holy Water Pots in possession at start of expedition
+HP Recovery From Successful Guarding
+HP Restoration upon Axe Attacks
+HP Restoration upon Bow Attacks
+HP Restoration upon Claw Attacks
+HP Restoration upon Colossal Sword Attacks
+HP Restoration upon Colossal Weapon Attacks
+HP Restoration upon Curved Greatsword Attacks
+HP Restoration upon Curved Sword Attacks
+HP Restoration upon Dagger Attacks
+HP Restoration upon Fist Attacks
+HP Restoration upon Flail Attacks
+HP Restoration upon Great Hammer Attacks
+HP Restoration upon Great Spear Attacks
+HP Restoration upon Greataxe Attacks
+HP Restoration upon Greatsword Attacks
+HP Restoration upon Halberd Attacks
+HP Restoration upon Hammer Attacks
+HP Restoration upon Heavy Thrusting Sword Attacks
+HP Restoration upon Katana Attacks
+HP Restoration upon Pike Attacks
+HP Restoration upon Reaper Attacks
+HP Restoration upon Spear Attacks
+HP Restoration upon Straight Sword Attacks
+HP Restoration upon Thrusting Counterattack
+HP Restoration upon Thrusting Sword Attacks
+HP Restoration upon Twinblade Attacks
+HP Restoration upon Whip Attacks
+HP Restoration with Head Shots
+HP restored when using cured meats, medicinal boluses, etc.
+Huge rune discount for shop purchases while on expedition
+Improved Attack Power with 3+ Axes Equipped
+Improved Attack Power with 3+ Bows Equipped
+Improved Attack Power with 3+ Claws Equipped
+Improved Attack Power with 3+ Colossal Swords Equipped
+Improved Attack Power with 3+ Colossal Weapons Equipped
+Improved Attack Power with 3+ Curved Greatswords Equipped
+Improved Attack Power with 3+ Curved Swords Equipped
+Improved Attack Power with 3+ Daggers Equipped
+Improved Attack Power with 3+ Fists Equipped
+Improved Attack Power with 3+ Flails Equipped
+Improved Attack Power with 3+ Great Hammers Equipped
+Improved Attack Power with 3+ Great Spears Equipped
+Improved Attack Power with 3+ Greataxes Equipped
+Improved Attack Power with 3+ Greatswords Equipped
+Improved Attack Power with 3+ Halberds Equipped
+Improved Attack Power with 3+ Hammers Equipped
+Improved Attack Power with 3+ Heavy Thrusting Swords Equipped
+Improved Attack Power with 3+ Katana Equipped
+Improved Attack Power with 3+ Reapers Equipped
+Improved Attack Power with 3+ Spears Equipped
+Improved Attack Power with 3+ Straight Swords Equipped
+Improved Attack Power with 3+ Thrusting Swords Equipped
+Improved Attack Power with 3+ Twinblades Equipped
+Improved Attack Power with 3+ Whips Equipped
+Improved Axe Attack Power
+Improved Bestial Incantations
+Improved Blood Loss Resistance
+Improved Bow Attack Power
+Improved Carian Sword Sorcery
+Improved Claw Attack Power
+Improved Colossal Sword Attack Power
+Improved Colossal Weapon Attack Power
+Improved Critical Hits
+Improved Critical Hits +1
+Improved Critical Hits +1 (Night of the Baron)
+Improved Crystalian sorcery
+Improved Curved Greatsword Attack Power
+Improved Curved Sword Attack Power
+Improved Dagger Attack Power
+Improved Damage Negation at Low HP
+Improved Death Blight Resistance
+Improved Dragon Communion Incantations
+Improved Dragon Cult Incantations
+Improved Fist Attack Power
+Improved Flail Attack Power
+Improved Frenzied Flame Incantations
+Improved Frost Resistance
+Improved Fundamentalist Incantations
+Improved Giants' Flame Incantations
+Improved Glintblade Sorcery
+Improved Godslayer Incantations
+Improved Gravity Sorcery
+Improved Great Hammer Attack Power
+Improved Great Spear Attack Power
+Improved Greataxe Attack Power
+Improved Greatsword Attack Power
+Improved Guard Counters
+Improved Halberd Attack Power
+Improved Hammer Attack Power
+Improved Heavy Thrusting Sword Attack Power
+Improved Initial Standard Attack
+Improved Invisibility Sorcery
+Improved Katana Attack Power
+Improved Madness Resistance
+Improved Night Sorcery
+Improved Perfuming Arts
+Improved Pike Attack Power
+Improved Poise & Damage Negation When Knocked Back by Damage
+Improved Poise Near Totem Stela
+Improved Poison Resistance
+Improved Reaper Attack Power
+Improved Roar & Breath Attacks
+Improved Rot Resistance
+Improved Sleep Resistance
+Improved Spear Attack Power
+Improved Stance-Breaking when Two-Handing
+Improved Stance-Breaking when Wielding Two Armaments
+Improved Stance-Breaking with Head Shots
+Improved Stonedigger Sorcery
+Improved Straight Sword Attack Power
+Improved Thorn Sorcery
+Improved Throwing Knife Damage
+Improved Throwing Pot Damage
+Improved Throwing Stone Damage
+Improved Thrusting Sword Attack Power
+Improved Twinblade Attack Power
+Improved Whip Attack Power
+Increased Maximum FP
+Increased Maximum HP
+Increased Maximum Stamina
+Increased rune acquisition for self and allies
+Intelligence +1
+Intelligence +2
+Intelligence +3
+[Ironeye] +1 additional Character Skill use
+[Ironeye] Art Charge Activation Adds Poison Effect
+[Ironeye] Boosts thrusting counterattacks after executing Art
+[Ironeye] Extends duration of weak point
+Items confer effect to all nearby allies
+Jumping Conjures Magic Projectiles
+Lightning Attack Power Up
+Lightning Attack Power Up +1
+Lightning Attack Power Up +2
+Lightning Damage Negation Up
+Lightning Grease in possession at start of expedition
+Lightning Pots in possession at start of expedition
+Madness Continually Recovers FP
+Magic Attack Power Up
+Magic Attack Power Up +1
+Magic Attack Power Up +2
+Magic Damage Negation Up
+Magic Grease in possession at start of expedition
+Magic Pots in possession at start of expedition
+Max FP permanently increased after releasing Sorcerer's Rise mechanism
+Max FP Up with 3+ Sacred Seals Equipped
+Max FP Up with 3+ Staves Equipped
+Max HP Up with 3+ Greatshields Equipped
+Max HP Up with 3+ Medium Shields Equipped
+Max HP Up with 3+ Small Shields Equipped
+Mind +1
+Mind +2
+Mind +3
+Nearby Frostbite Conceals Self
+Partial HP Restoration upon Post-Damage Attacks
+Performing consecutive successful guards improves guard ability and deflects big attacks
+Physical Attack Up
+Physical Attack Up +1
+Physical Attack Up +2
+Physical Attack Up +3
+Poise +1
+Poise +2
+Poise +3
+Poison & Rot in Vicinity Increases Attack Power
+Poison & Rot in Vicinity Increases Attack Power (Night of the Wise)
+Poisonbone Darts in possession at start of expedition
+[Raider] Character Skill damage up, damage negation impaired during use
+[Raider] Damage taken while using Character Skill improves attack power and stamina
+[Raider] Duration of Ultimate Art extended
+[Raider] Permanently increase attack power when performing Character Skill's final attack
+Raised stamina recovery for nearby allies, but not for self
+[Recluse] Activating Ultimate Art raises Max HP (Bone-Like Stone)
+[Recluse] Activating Ultimate Art raises Max HP
+[Recluse] Collecting 4 Affinity Residues Improves Affinity Attack Power
+[Recluse] Collecting affinity residue activates Terra Magica
+[Recluse] Extends duration of blood sigils
+[Recluse] Suffer blood loss and increase attack power upon Art activation
+[Revenant] Ability activation chance increased
+[Revenant] Expend own HP to fully heal nearby allies when activating Art (Old Portrait)
+[Revenant] Expend own HP to fully heal nearby allies when activating Art
+[Revenant] Power up while fighting alongside family
+[Revenant] Strengthens family and allies when Ultimate Art is activated
+[Revenant] Trigger ghostflame explosion during Ultimate Art activation
+Rune discount for shop purchases while on expedition
+Shield Grease in possession at start of expedition
+Shockwave Produced From Successful Guarding
+Slowly restore HP for self and nearby allies when HP is low
+Small Pouch in possession at start of expedition
+Stamina recovers with each successful attack
+Stamina recovers with each successful attack +1
+Stamina recovers with each successful attack +1 (Night of the Beast)
+Starlight Shards in possession at start of expedition
+Starting armament deals fire damage
+Starting armament deals holy damage
+Starting armament deals lightning damage
+Starting armament deals magic damage
+Starting armament inflicts blood loss
+Starting armament inflicts frost
+Starting armament inflicts poison
+Starting armament inflicts scarlet rot
+Stonesword Key in possession at start of expedition
+Strength +1
+Strength +2
+Strength +3
+Strong Attack Creates Wide Wave of Heat
+Surge Sprint Landings Split Earth
+Switching Weapons Adds an Affinity Attack
+Switching Weapons Boosts Attack Power
+Switching Weapons Boosts Attack Power (Fell Omen Fetish)
+Taking attacks improves attack power
+Taking attacks improves attack power (Besmirched Frame)
+Throwing Daggers in possession at start of expedition
+Treasure marked upon map
+Ultimate Art Gauge +1
+Ultimate Art Gauge +2
+Ultimate Art Gauge +3
+Vigor +1
+Vigor +2
+Vigor +3
+Wraith Calling Bell in possession at start of expedition
+[Wylder] +1 additional Character Skill use
+[Wylder] +1 additional Character Skill use
+[Wylder] Art activation spreads fire in area
+[Wylder] Art gauge greatly filled when ability is activated
+[Wylder] Art gauge greatly filled when ability is activated (Silver Tear)
+[Wylder] Character Skill inflicts Blood Loss
+[Wylder] Follow-up attacks possible when using Character Skill (greatsword only)
+[Wylder] Impaired damage negation, improved attack power & stamina after Art activation
+[Wylder] Improved attack power when ability is activated
+[Wylder] Improved attack power when Character Skill is activated
+[Wylder] Reduced cooldown time for Character Skill

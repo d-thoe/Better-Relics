@@ -13,7 +13,12 @@ import re
 import threading # for _update_relics_csv (GUI pbar) which uses threading to not freeze GUI during video parsing
 from tkinter import filedialog, Tk # file in
 from pathlib import Path # find file home path
+<<<<<<< HEAD
 
+=======
+from TextNormalizer import TextNormalizer
+normalizer = TextNormalizer("AllRelicNames.txt", "AllRelicAttributes.txt")
+>>>>>>> threaded-gui
 
 # === Constants ===
 VIDEO_NAME = "relics.mp4"
@@ -84,6 +89,7 @@ ROIS = {
 
 
 # === Functions Start ===
+<<<<<<< HEAD
 def normalize_text(text):
     if not text:
         return ""
@@ -133,6 +139,8 @@ def normalize_text(text):
     return text.strip()
 
 
+=======
+>>>>>>> threaded-gui
 def extract_text_easyocr(img):
     if img is None or img.size == 0:
         return ""
@@ -396,10 +404,17 @@ class RelicSelector(tk.Tk):
                 continue
 
             # ---- Non-GUI work ----
+<<<<<<< HEAD
             name = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["name"])))
             slot1 = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["slot1"])))
             slot2 = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["slot2"])))
             slot3 = normalize_text(extract_text_easyocr(crop_frame(frame, ROIS["slot3"])))
+=======
+            name = normalizer.normalize(extract_text_easyocr(crop_frame(frame, ROIS["name"])))
+            slot1 = normalizer.normalize(extract_text_easyocr(crop_frame(frame, ROIS["slot1"])))
+            slot2 = normalizer.normalize(extract_text_easyocr(crop_frame(frame, ROIS["slot2"])))
+            slot3 = normalizer.normalize(extract_text_easyocr(crop_frame(frame, ROIS["slot3"])))
+>>>>>>> threaded-gui
 
             relic_hash = hash_relic(name, slot1, slot2, slot3)
             if relic_hash in seen_hashes:
